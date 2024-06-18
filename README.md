@@ -1,6 +1,6 @@
 # Projeto-Ambiente-Web-Docker
 
-# Guia de Configuração do Ambiente Docker para WordPress com MySQL, Redis e Prometheus
+# Configuração do Ambiente Docker para WordPress com MySQL, Redis e Prometheus
 
 ## Passo 1: Preparando o ambiente
 
