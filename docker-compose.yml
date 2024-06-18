@@ -3,57 +3,52 @@ version: '3.8'
 services:
   wordpress:
     image: wordpress:latest
+    depends_on:
+      - db
+      - redis
     ports:
       - "8000:80"
     environment:
-      WORDPRESS_DB_HOST: mysql
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: password
       WORDPRESS_DB_NAME: wordpress
-      WORDPRESS_DB_USER: root
-      WORDPRESS_DB_PASSWORD: example
-      WORDPRESS_CONFIG_EXTRA: |
-        define('WP_CACHE', true);
-        define('WP_REDIS_HOST', 'redis');
-        define('WP_REDIS_PORT', '6379');
-    depends_on:
-      - mysql
-      - redis
+    volumes:
+      - wordpress_data:/var/www/html
     networks:
-      - backend
+      - wordpress_network
 
-  mysql:
+  db:
     image: mysql:5.7
     environment:
       MYSQL_DATABASE: wordpress
-      MYSQL_ROOT_PASSWORD: example
+      MYSQL_USER: wpuser
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
     volumes:
-      - mysql_data:/var/lib/mysql
+      - db_data:/var/lib/mysql
     networks:
-      - backend
+      - wordpress_network
 
   redis:
     image: redis:latest
-    ports:
-      - "6379:6379"
     networks:
-      - backend
+      - wordpress_network
 
   prometheus:
     image: prom/prometheus:latest
-    ports:
-      - "9090:9090"
     volumes:
       - ./prometheus:/etc/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-    depends_on:
-      - wordpress
+    ports:
+      - "9090:9090"
     networks:
-      - backend
-
-networks:
-  backend:
-    driver: bridge
+      - wordpress_network
 
 volumes:
-  mysql_data:
+  wordpress_data:
+  db_data:
+
+networks:
+  wordpress_network:
